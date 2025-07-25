@@ -1,20 +1,33 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { useMutation } from "../api/useMutation";
+import { useAuth } from "../auth/AuthContext";
 
-import { useAuth } from "./AuthContext";
-
-/** A form that allows users to log into an existing account. */
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-
   const [error, setError] = useState(null);
+
+  const loginMutation = useMutation(async ({ username, password }) => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/users/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Login failed");
+    return result;
+  });
 
   const onLogin = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
     try {
-      await login({ username, password });
+      const { token } = await loginMutation.mutateAsync({ username, password });
+      login(token);
       navigate("/");
     } catch (e) {
       setError(e.message);
@@ -23,20 +36,20 @@ export default function Login() {
 
   return (
     <>
-      <h1>Log in to your account</h1>
+      <h1>Login to your account</h1>
       <form action={onLogin}>
         <label>
           Username
-          <input type="username" name="username" required />
+          <input type="text" name="username" required />
         </label>
         <label>
           Password
           <input type="password" name="password" required />
         </label>
-        <button>Login</button>
+        <button disabled={loginMutation.isPending}>Login</button>
         {error && <output>{error}</output>}
       </form>
-      <Link to="/register">Need an account? Register here.</Link>
+      <Link to="/register">Don’t have an account? Register here.</Link>
     </>
   );
 }
