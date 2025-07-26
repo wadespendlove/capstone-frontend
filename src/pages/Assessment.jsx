@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 
 export default function Assessment() {
   const [formState, setFormState] = useState({
-    goal: "",
+    fitnessGoal: "", // ✅ match backend field name
     experience: "",
     split: "",
   });
@@ -33,8 +33,15 @@ export default function Assessment() {
         }
       );
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to assign plan");
+      const isJson = res.headers
+        .get("content-type")
+        ?.includes("application/json");
+
+      const result = isJson ? await res.json() : await res.text();
+
+      if (!res.ok) {
+        throw new Error(result?.error || result || "Failed to assign plan");
+      }
 
       navigate("/dashboard");
     } catch (err) {
@@ -52,15 +59,15 @@ export default function Assessment() {
         <label>
           What’s your main fitness goal?
           <select
-            name="goal"
-            value={formState.goal}
+            name="fitnessGoal"
+            value={formState.fitnessGoal}
             onChange={handleChange}
             required
           >
             <option value="">Select one</option>
-            <option value="muscle">Build muscle</option>
-            <option value="fat_loss">Lose fat</option>
-            <option value="endurance">Improve endurance</option>
+            <option value="Gain Muscle Mass">Build muscle</option>
+            <option value="Weight Loss">Lose fat</option>
+            <option value="Gain Strength">Improve endurance</option>
           </select>
         </label>
 
