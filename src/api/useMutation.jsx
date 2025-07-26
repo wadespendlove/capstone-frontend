@@ -22,8 +22,11 @@ export default function useMutation(method, resource, tagsToInvalidate) {
         body: JSON.stringify(body),
       });
       setData(result);
-      invalidateTags(tagsToInvalidate);
-      return true;
+      if (Array.isArray(tagsToInvalidate)) {
+        invalidateTags(tagsToInvalidate);
+      }
+
+      return result;
     } catch (e) {
       console.error(e);
       setError(e.message);

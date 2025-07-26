@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useQuery } from "../api/useQuery";
 import { useAuth } from "../auth/AuthContext";
 
 export default function Assessment() {
@@ -42,6 +41,9 @@ export default function Assessment() {
       setError(err.message);
     }
   };
+  if (!token) {
+    return <p>You must be logged in to take the assessment.</p>;
+  }
 
   return (
     <section>
